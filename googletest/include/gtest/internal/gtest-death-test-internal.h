@@ -184,20 +184,21 @@ GTEST_API_ bool ExitedUnsuccessfully(int exit_status);
 // ASSERT_EXIT*, and EXPECT_EXIT*.
 # define GTEST_DEATH_TEST_(statement, predicate, regex, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+  bool gtest_death = false; \
   if (::testing::internal::AlwaysTrue()) { \
     const ::testing::internal::RE& gtest_regex = (regex); \
     ::testing::internal::DeathTest* gtest_dt; \
     if (!::testing::internal::DeathTest::Create(#statement, &gtest_regex, \
         __FILE__, __LINE__, &gtest_dt)) { \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_, __LINE__); \
+      gtest_death = true; \
     } \
-    if (gtest_dt != NULL) { \
+    if (!gtest_death && gtest_dt != NULL) { \
       ::testing::internal::scoped_ptr< ::testing::internal::DeathTest> \
           gtest_dt_ptr(gtest_dt); \
       switch (gtest_dt->AssumeRole()) { \
         case ::testing::internal::DeathTest::OVERSEE_TEST: \
           if (!gtest_dt->Passed(predicate(gtest_dt->Wait()))) { \
-            goto GTEST_CONCAT_TOKEN_(gtest_label_, __LINE__); \
+            gtest_death = true; \
           } \
           break; \
         case ::testing::internal::DeathTest::EXECUTE_TEST: { \
@@ -211,9 +212,9 @@ GTEST_API_ bool ExitedUnsuccessfully(int exit_status);
           break; \
       } \
     } \
-  } else \
-    GTEST_CONCAT_TOKEN_(gtest_label_, __LINE__): \
-      fail(::testing::internal::DeathTest::LastMessage())
+  } \
+  if (gtest_death) \
+    fail(::testing::internal::DeathTest::LastMessage())
 // The symbol "fail" here expands to something into which a message
 // can be streamed.
 
