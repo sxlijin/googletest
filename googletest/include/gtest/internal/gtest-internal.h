@@ -1148,17 +1148,18 @@ class NativeArray {
 
 #define GTEST_TEST_NO_THROW_(statement, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+  bool gtest_uncaught_expected = false; \
   if (::testing::internal::AlwaysTrue()) { \
     try { \
       GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
     } \
     catch (...) { \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_testnothrow_, __LINE__); \
+      gtest_uncaught_expected = true; \
     } \
-  } else \
-    GTEST_CONCAT_TOKEN_(gtest_label_testnothrow_, __LINE__): \
-      fail("Expected: " #statement " doesn't throw an exception.\n" \
-           "  Actual: it throws.")
+  } \
+  if (!gtest_uncaught_expected) \
+    fail("Expected: " #statement " doesn't throw an exception.\n" \
+         "  Actual: it throws.")
 
 #define GTEST_TEST_ANY_THROW_(statement, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
