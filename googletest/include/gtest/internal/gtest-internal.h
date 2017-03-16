@@ -1191,17 +1191,18 @@ class NativeArray {
 
 #define GTEST_TEST_NO_FATAL_FAILURE_(statement, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+  bool gtest_no_fatal_failure = true; \
   if (::testing::internal::AlwaysTrue()) { \
     ::testing::internal::HasNewFatalFailureHelper gtest_fatal_failure_checker; \
     GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
     if (gtest_fatal_failure_checker.has_new_fatal_failure()) { \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__); \
+      gtest_no_fatal_failure = false; \
     } \
-  } else \
-    GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__): \
-      fail("Expected: " #statement " doesn't generate new fatal " \
-           "failures in the current thread.\n" \
-           "  Actual: it does.")
+  }  \
+  if (!gtest_no_fatal_failure) \
+    fail("Expected: " #statement " doesn't generate new fatal " \
+         "failures in the current thread.\n" \
+         "  Actual: it does.")
 
 // Expands to the name of the class that implements the given test.
 #define GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
