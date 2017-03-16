@@ -1123,8 +1123,9 @@ class NativeArray {
 
 #define GTEST_TEST_THROW_(statement, expected_exception, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
-  if (::testing::internal::ConstCharPtr gtest_msg = "") { \
-    bool gtest_caught_expected = false; \
+  bool gtest_caught_expected = false; \
+  ::testing::internal::ConstCharPtr gtest_msg; \
+  if (gtest_msg = "") { \
     try { \
       GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
     } \
@@ -1135,16 +1136,14 @@ class NativeArray {
       gtest_msg.value = \
           "Expected: " #statement " throws an exception of type " \
           #expected_exception ".\n  Actual: it throws a different type."; \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__); \
     } \
-    if (!gtest_caught_expected) { \
+    if (!gtest_caught_expected && strlen(gtest_msg.value) == 0) { \
       gtest_msg.value = \
           "Expected: " #statement " throws an exception of type " \
           #expected_exception ".\n  Actual: it throws nothing."; \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__); \
     } \
-  } else \
-    GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__): \
+  } \
+  if (!gtest_caught_expected) \
       fail(gtest_msg.value)
 
 #define GTEST_TEST_NO_THROW_(statement, fail) \
