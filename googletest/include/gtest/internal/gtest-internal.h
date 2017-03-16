@@ -1163,21 +1163,18 @@ class NativeArray {
 
 #define GTEST_TEST_ANY_THROW_(statement, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+  bool gtest_caught_any = false; \
   if (::testing::internal::AlwaysTrue()) { \
-    bool gtest_caught_any = false; \
     try { \
       GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
     } \
     catch (...) { \
       gtest_caught_any = true; \
     } \
-    if (!gtest_caught_any) { \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_testanythrow_, __LINE__); \
-    } \
-  } else \
-    GTEST_CONCAT_TOKEN_(gtest_label_testanythrow_, __LINE__): \
-      fail("Expected: " #statement " throws an exception.\n" \
-           "  Actual: it doesn't.")
+  } \
+  if (!gtest_caught_any) \
+    fail("Expected: " #statement " throws an exception.\n" \
+         "  Actual: it doesn't.")
 
 
 // Implements Boolean test assertions such as EXPECT_TRUE. expression can be
